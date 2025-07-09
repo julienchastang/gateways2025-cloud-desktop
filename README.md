@@ -341,7 +341,9 @@ helm repo update
 
 1) Dynamically create some secret values in `values.yaml` by running:
 ```bash
-bash create_secrets.sh
+cd gateways2025-cloud-desktop
+export INGRESS_HOST="$K8S_CLUSTER_NAME.<project-id>.projects.jetstream-cloud.org"
+./create_secrets.sh
 ```
 
 1) Install JupyterHub by running:

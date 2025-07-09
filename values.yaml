@@ -1,0 +1,137 @@
+hub:
+  cookieSecret: COOKIESECRET
+  config:
+    JupyterHub:
+      authenticator_class: shared-password
+    SharedPasswordAuthenticator:
+      admin_password: ADMINPASSWORD
+      user_password: USERPASSWORD
+    Authenticator:
+      admin_users:
+        - admin1
+        - admin2
+      allowed_users:
+        - user1
+        - user2
+
+proxy:
+  secretToken: PROXYSECRETTOKEN
+
+scheduling:
+  corePods:
+    tolerations:
+      - key: hub.jupyter.org/dedicated
+        operator: Equal
+        value: core
+        effect: NoSchedule
+      - key: hub.jupyter.org_dedicated
+        operator: Equal
+        value: core
+        effect: NoSchedule
+    nodeAffinity:
+      matchNodePurpose: require
+
+  # Enable user placeholders so that users can have a smoother user experience
+  podPriority:
+    enabled: true
+  userPlaceholder:
+    replicals: 4
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt"
+    nginx.ingress.kubernetes.io/proxy-body-size: 500m
+  hosts:
+    - INGRESSHOST
+  tls:
+    - hosts:
+        - INGRESSHOST
+      secretName: certmanager-tls-jupyterhub
+
+singleuser:
+  # Ensure single user servers are always scheduled on a nodes of the "mediums"
+  # nodegroup
+  nodeSelector:
+    capi.stackhpc.com/node-group: mediums
+
+  # Resource specs
+  memory:
+    guarantee: 12G
+    limit: 12G
+  cpu:
+    guarantee: 3.5
+    limit: 3.5
+  storage:
+    # Don't create any cloud volumes, instead, use an ephemeral "emptyDir"
+    # volume that can be mounted on all containers of the Pod to share data
+    # between JLab and the IDV/CAVE sidecar
+    type: none
+    extraVolumes:
+      - name: tmp-volume
+        emptyDir:
+          sizeLimit: 10Gi
+    extraVolumeMounts:
+      - name: tmp-volume
+        mountPath: /home/jovyan
+
+  image:
+    name: "docker.io/unidata/gw25"
+    tag: TAG
+
+  # Misc
+  extraEnv:
+    NBGITPULLER_DEPTH: "0"
+    START_VIRTUAL_DESKTOP: "1"
+  defaultUrl: "/lab"
+
+  # Startup commands are ran out of $HOME
+  lifecycleHooks:
+    postStart:
+      exec:
+        command:
+          - "bash"
+          - "-c"
+          - |
+            echo "startup hooks"
+
+  profileList:
+    - display_name: "Default"
+      description: "12 GB of memory; 3.5 vCPUs"
+      default: true
+      kubespawner_override:
+        mem_guarantee: 12G
+        mem_limit: 12G
+        cpu_guarantee: 3.5
+        cpu_limit: 3.5
+    - display_name: "Compute-centric: High Power"
+      description: "28 GB of memory; 6 vCPUs"
+      kubespawner_override:
+        mem_guarantee: 28G
+        mem_limit: 28G
+        cpu_guarantee: 6
+        cpu_limit: 6
+    - display_name: "IDV/CAVE"
+      description: "IDV/CAVE-centric; JupyterLab: 4GB of memory, 1 vCPU; IDV/CAVE: 24GB of memory; 6 vCPUs"
+      kubespawner_override:
+        mem_guarantee: 4G
+        mem_limit: 4G
+        cpu_guarantee: 1
+        cpu_limit: 1
+        extra_containers:
+          - name: cave-idv-sidecar
+            image: "docker.io/unidata/cave-idv-sidecar:TAG"
+            volume_mounts:
+              - mountPath: /home/jovyan
+                name: tmp-volume
+            ports:
+              - containerPort: 6080
+                name: novnc
+            resources:
+              requests:
+                cpu: "6"
+                memory: "21Gi"
+              limits:
+                cpu: "6"
+                memory: "21Gi"

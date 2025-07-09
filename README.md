@@ -33,29 +33,30 @@ requiring similar capabilities.
 
 # Table of Contents
 
-- [Abstract]
-- [Table of Contents]
-- [How To]
-  - [Prerequisites]
-  - [Provision a Cluster with Magnum]
-    - [Create the Cluster]
-    - [Fetch the kubectl config file]
-    - [Label the default worker node]
-    - [Configure a Subdomain]
-    - [Install an Ingress Resource]
-    - [Configure HTTPS]
-    - [Create a Nodegroup]
-  - [Install JupyterHub]
-    - [Build the Docker Images]
-      - [JupyterLab]
-      - [Virtual Desktop]
-    - [Deploy JupyterHub via Helm]
-  - [Example Workflow]
-  - [Cluster Teardown]
+- [Abstract](#Abstract)
+- [Table of Contents](#Table-of-Contents)
+- [How To](#How-To)
+  - [Prerequisites](#Prerequisites)
+  - [Provision a Cluster with Magnum](#Provision-a-Cluster-with-Magnum)
+    - [Create the Cluster](#Create-the-Cluster)
+    - [Fetch the kubectl config file](#Fetch-the-kubectl-config-file)
+    - [Label the default worker node](#Label-the-default-worker-node)
+    - [Configure a Subdomain](#Configure-a-Subdomain)
+    - [Install an Ingress Resource](#Install-an-Ingress-Resource)
+    - [Configure HTTPS](#Configure-HTTPS)
+    - [Create a Nodegroup](#Create-a-Nodegroup)
+  - [Install JupyterHub](#Install-JupyterHub)
+    - [Build the Docker Images (Optional)](#Build-the-Docker-Images-Optional)
+    - [Deploy JupyterHub via Helm](#Deploy-JupyterHub-via-Helm)
+  - [Cluster Teardown](#Cluster-Teardown)
 
 # How To
 
+[To Table of Contents](#Table-of-Contents)
+
 ## Prerequisites
+
+[To Table of Contents](#Table-of-Contents)
 
 Before proceeding, you must:
 
@@ -85,7 +86,11 @@ contains several convenience scripts:
 
 ## Provision a Cluster with Magnum
 
+[To Table of Contents](#Table-of-Contents)
+
 ### Create the Cluster
+
+[To Table of Contents](#Table-of-Contents)
 
 Creating a Kubernetes cluster is made simple with Openstack Magnum, and is made
 even simpler with Andrea's convenience scripts. The `create_cluster.sh` script
@@ -131,6 +136,8 @@ cluster by executing the following command:
 
 ### Fetch the kubectl config File
 
+[To Table of Contents](#Table-of-Contents)
+
 The `kubectl` `config` file will allow `kubectl` to interact with the K8s API on
 your newly created cluster. Take caution when running the following commands if
 you already have a `~/.kube/config` file from another cluster, as it will be
@@ -147,6 +154,8 @@ You should now be able to run `kubectl` commands, such as `kubectl get nodes`.
 
 ### Label the default worker node
 
+[To Table of Contents](#Table-of-Contents)
+
 We will add a label to the default worker node to ensure that JupyterHub "core"
 Pods, which are essential to a healthy JupyterHub cluster, are isolated from the
 resource hungry single user JupyterLab servers.
@@ -160,6 +169,8 @@ kubectl label nodes <default-worker-node-name> hub.jupyter.org/node-purpose=core
 This label is referenced in the JupyterHub configuration `values.yaml`.
 
 ### Install an Ingress Resource
+
+[To Table of Contents](#Table-of-Contents)
 
 A Kubernetes "Ingress" allows traffic into the cluster and is necessary to
 configure HTTPS. The following `helm` command will install
@@ -184,6 +195,8 @@ this will be used to create an "A record" and allow users to access the
 JupyterHub.
 
 ### Configure a Subdomain
+
+[To Table of Contents](#Table-of-Contents)
 
 To create an "A record", that is a subdomain name, for your cluster, we first
 need to find your project's "zone":
@@ -215,6 +228,8 @@ haven't set up any services yet.
 
 ### Configure HTTPS
 
+[To Table of Contents](#Table-of-Contents)
+
 We will use `cert-manager` to obtain a certificate from LetsEncrypt, which will
 allow for secure connections to JupyterHub via HTTPS.
 
@@ -233,6 +248,8 @@ Apply the cluster issuer manifest:
 Your cluster should now be ready to request and obtain a certificate.
 
 ### Create a Nodegroup
+
+[To Table of Contents](#Table-of-Contents)
 
 As mentioned in a previous section, we created the cluster with a single worker
 node. Here, we create a new "nodegroup" on which we'll schedule the JupyterHub
@@ -255,7 +272,11 @@ the output of `kubectl get nodes`.
 
 ## Install JupyterHub
 
+[To Table of Contents](#Table-of-Contents)
+
 ### Build the Docker Images (Optional)
+
+[To Table of Contents](#Table-of-Contents)
 
 You may wish to make modifications to the supplied Docker images. You can find
 them in this repo under the `docker` directory.
@@ -307,6 +328,8 @@ singleuser:
 
 ### Deploy JupyterHub via Helm
 
+[To Table of Contents](#Table-of-Contents)
+
 Before we finally deploy JupyterHub, we need to perform a few last
 configurations.
 
@@ -339,6 +362,8 @@ kubectl get certificaterequest
 Inspect `values.yaml` for the username and password to use to login.
 
 ## Cluster Teardown
+
+[To Table of Contents](#Table-of-Contents)
 
 Magnum makes tearing down the cluster as simple as it is to create it. We make
 use of Andrea's convenience scripts once again:

@@ -1,0 +1,4 @@
+python-designateclient == 6.3.0
+python-magnumclient == 4.8.1
+python-octaviaclient == 3.11.0
+python-openstackclient == 8.0.0
